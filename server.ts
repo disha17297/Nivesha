@@ -1,23 +1,24 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import type { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
-import { parseTransactionText } from './src/services/parserEngine';
-import { correctionMemory } from './src/services/correctionMemory';
-import { runMonteCarloSimulation } from './src/services/simulationEngine';
-import { inspectCompliance } from './src/services/complianceFilter';
+import { parseTransactionText } from './src/services/parserEngine.ts';
+import { correctionMemory } from './src/services/correctionMemory.ts';
+import { runMonteCarloSimulation } from './src/services/simulationEngine.ts';
+import { inspectCompliance } from './src/services/complianceFilter.ts';
 import {
   evaluateLiquiditySweep,
   evaluateOverdraftShield,
   evaluateSpendingVelocity,
   formatAdviceByPersona,
-} from './src/services/agenticShields';
+} from './src/services/agenticShields.ts';
 import {
   INITIAL_USER_PROFILE,
   calculateFinancialHealth,
-} from './src/services/financialGraph';
-import { UserFinancialProfile, ScenarioDeltas, CoachPersona } from './src/types/finance';
+} from './src/services/financialGraph.ts';
+import type { UserFinancialProfile, ScenarioDeltas, CoachPersona } from './src/types/finance.ts';
 
 dotenv.config();
 

@@ -1,4 +1,4 @@
-import {
+import type {
   UserFinancialProfile,
   FinancialAccount,
   RecurringSubscription,
@@ -7,7 +7,7 @@ import {
   FixedLiability,
   Transaction,
   FinancialHealthMetrics,
-} from '../types/finance';
+} from '../types/finance.ts';
 
 export interface GraphNode {
   id: string;

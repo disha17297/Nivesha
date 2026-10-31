@@ -1,5 +1,5 @@
-import { Transaction, ReceiptItem } from '../types/finance';
-import { correctionMemory } from './correctionMemory';
+import type { Transaction, ReceiptItem } from '../types/finance.ts';
+import { correctionMemory } from './correctionMemory.ts';
 
 export interface ParseOptions {
   pdfPassword?: string;

@@ -1,4 +1,4 @@
-import { CorrectionRule, Transaction } from '../types/finance';
+import type { CorrectionRule, Transaction } from '../types/finance.ts';
 
 // Default pre-loaded learned memory rules demonstrating active learning tuples
 const DEFAULT_RULES: CorrectionRule[] = [

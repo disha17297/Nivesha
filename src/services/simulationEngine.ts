@@ -1,9 +1,9 @@
-import {
+import type {
   UserFinancialProfile,
   ScenarioDeltas,
   SimulationResult,
   SimulationTrajectoryPoint,
-} from '../types/finance';
+} from '../types/finance.ts';
 
 /**
  * Box-Muller Gaussian transform for standard normal random variable N(0, 1)

@@ -1,9 +1,9 @@
-import {
+import type {
   UserFinancialProfile,
   LiquiditySweepStatus,
   OverdraftAlert,
   CoachPersona,
-} from '../types/finance';
+} from '../types/finance.ts';
 
 export interface SpendingVelocityStatus {
   current_day: number;
