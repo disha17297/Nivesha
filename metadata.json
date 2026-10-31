@@ -1,0 +1,6 @@
+{
+  "name": "Nivesha: Your Money, Your Way",
+  "description": "Living money model and personal finance coach featuring multi-modal statement ingestion, active correction memory, stochastic Monte Carlo scenario planning, and non-advisory compliance guardrails.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
