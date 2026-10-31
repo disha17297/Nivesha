@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nivesha - Living Money Model & Personal Finance Coach</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            900: '#064e3b',
+                        },
+                        slate: {
+                            800: '#1e293b',
+                            850: '#172033',
+                            900: '#0f172a',
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome for crisp modern icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="h-full flex flex-col overflow-x-hidden bg-slate-950 text-slate-200">
+
+    <!-- Guardrail Compliance Banner -->
+    <div class="bg-amber-950/80 border-b border-amber-600/30 text-amber-200 px-4 py-2 text-xs md:text-sm flex items-center justify-between shadow-sm">
+        <div class="max-w-7xl mx-auto flex items-center gap-2 text-center md:text-left">
+            <i class="fa-solid fa-shield-halved text-amber-400 text-base shrink-0"></i>
+            <span>
+                <strong>Educational & Scenario Modeling Tool Only:</strong> Nivesha provides behavioral coaching, pattern analysis, and projection models; it does <em>not</em> provide financial advice or recommend specific securities or financial products.
+            </span>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-900/40">
+                        <i class="fa-solid fa-chart-line text-slate-950 text-xl font-black"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                            NIVESHA <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">v2.4 Living Model</span>
+                        </span>
+                        <p class="text-xs text-slate-400 hidden sm:block">Your Money Your Way • Personal Finance Coach</p>
+                    </div>
+                </div>
+
+                <!-- Nav Controls / Actions -->
+                <div class="flex items-center gap-3">
+                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn px-3 py-1.5 text-sm font-medium rounded-lg text-emerald-400 bg-emerald-950/50 border border-emerald-500/30">
+                        <i class="fa-solid fa-border-all mr-1.5"></i> Dashboard
+                    </button>
+                    <button onclick="switchTab('simulator')" id="nav-simulator" class="nav-btn px-3 py-1.5 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800">
+                        <i class="fa-solid fa-sliders mr-1.5"></i> What-If Lab
+                    </button>
+                    <button onclick="openReportModal()" class="px-3.5 py-1.5 text-sm font-semibold rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-colors shadow-md shadow-emerald-500/10 flex items-center gap-1.5">
+                        <i class="fa-solid fa-file-invoice"></i> Monthly Review
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Dynamic Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm"></div>
+
+    <!-- Main Content Body -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- TAB 1: DASHBOARD VIEW -->
+        <div id="tab-dashboard" class="space-y-6">
+
+            <!-- Top Row: Financial Health Summary Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Card 1: Monthly Income -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Monthly Inflow</div>
+                    <div class="text-2xl font-bold text-white flex items-baseline gap-1">
+                        ₹<span id="card-income">1,85,000</span>
+                    </div>
+                    <div class="mt-2 text-xs text-emerald-400 flex items-center gap-1">
+                        <i class="fa-solid fa-circle-check"></i> Salary & Side Hustle Verified
+                    </div>
+                    <div class="absolute right-3 bottom-3 text-slate-800 text-4xl -z-0 opacity-40">
+                        <i class="fa-solid fa-wallet"></i>
+                    </div>
+                </div>
+
+                <!-- Card 2: Fixed Outflows & Burn -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Fixed Monthly Commitments</div>
+                    <div class="text-2xl font-bold text-white flex items-baseline gap-1">
+                        ₹<span id="card-fixed">92,500</span>
+                    </div>
+                    <div class="mt-2 text-xs text-slate-400">
+                        Rent, Home Loan EMI, SIPs & Utilities
+                    </div>
+                    <div class="absolute right-3 bottom-3 text-slate-800 text-4xl -z-0 opacity-40">
+                        <i class="fa-solid fa-receipt"></i>
+                    </div>
+                </div>
+
+                <!-- Card 3: Emergency Fund Status -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Emergency Reserve</div>
+                    <div class="text-2xl font-bold text-amber-400 flex items-baseline gap-1">
+                        <span id="card-ef-months">4.2</span> <span class="text-sm text-slate-400 font-normal">/ 6 Months target</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full mt-3 overflow-hidden">
+                        <div id="card-ef-bar" class="bg-amber-400 h-full rounded-full" style="width: 70%"></div>
+                    </div>
+                    <div class="mt-1.5 text-xs text-slate-400 flex justify-between">
+                        <span>₹<span id="card-ef-val">3,88,500</span> saved</span>
+                        <span>Goal: ₹5,55,000</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: Living Savings Buffer -->
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 relative overflow-hidden">
+                    <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Discretionary Runway</div>
+                    <div class="text-2xl font-bold text-emerald-400 flex items-baseline gap-1">
+                        ₹<span id="card-discretionary">38,200</span>
+                    </div>
+                    <div class="mt-2 text-xs text-emerald-400/90 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-trend-up"></i> On track to hit Year-end Goals
+                    </div>
+                    <div class="absolute right-3 bottom-3 text-slate-800 text-4xl -z-0 opacity-40">
+                        <i class="fa-solid fa-piggy-bank"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Nudges & Drift Alerts Banner Section -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                        <i class="fa-solid fa-bolt text-amber-400"></i> Smart Nudges & Behavioral Drift Detection
+                    </h3>
+                    <span class="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-full border border-slate-700">2 Active Insights</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="nudges-container">
+                    <!-- Nudge 1 -->
+                    <div class="p-3 bg-amber-950/20 border border-amber-500/20 rounded-lg flex items-start gap-3">
+                        <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400 shrink-0">
+                            <i class="fa-solid fa-utensils"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-amber-300">Dining & Food Delivery Overdrift</div>
+                            <div class="text-xs text-slate-300 mt-0.5">Dining Out spending is running <span class="font-semibold text-amber-400">+28% higher</span> than target this mid-month (₹14,200 spent).</div>
+                            <button onclick="applyNudgeRecommendation('dining')" class="mt-2 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 px-2.5 py-1 rounded font-medium transition-colors">
+                                Reallocate ₹3,000 from Shopping buffer
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Nudge 2 -->
+                    <div class="p-3 bg-teal-950/20 border border-teal-500/20 rounded-lg flex items-start gap-3">
+                        <div class="p-2 bg-teal-500/10 rounded-lg text-teal-400 shrink-0">
+                            <i class="fa-solid fa-shield-heart"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-teal-300">Emergency Fund Catch-Up Opportunity</div>
+                            <div class="text-xs text-slate-300 mt-0.5">You have ₹8,500 unallocated surplus in your checking account. Boosting reserves will advance your 6-month runway goal by 18 days.</div>
+                            <button onclick="applyNudgeRecommendation('ef-boost')" class="mt-2 text-xs bg-teal-500/20 hover:bg-teal-500/30 text-teal-300 border border-teal-500/30 px-2.5 py-1 rounded font-medium transition-colors">
+                                Transfer ₹5,000 to Emergency Fund
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Interactive Section: Ingestion, Correction, Subscriptions -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Column 1 & 2: Transaction Ingestion, Parser & Rule Correction Sandbox -->
+                <div class="lg:col-span-2 space-y-6">
+
+                    <!-- Multi-Format Ingestion Sandbox Card -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-file-import text-emerald-400"></i> Messy Data Ingestion Sandbox
+                                </h2>
+                                <p class="text-xs text-slate-400">Upload PDF/CSV bank statements or paste raw SMS logs for automated extraction.</p>
+                            </div>
+                            <button onclick="loadSampleTransactions()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-emerald-400 rounded-lg transition-all shrink-0 flex items-center gap-1.5">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i> Load Messy Sample Set
+                            </button>
+                        </div>
+
+                        <!-- Raw Text Ingestion Box -->
+                        <div class="space-y-3">
+                            <textarea id="raw-input" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-xs text-slate-300 focus:ring-1 focus:ring-emerald-500 focus:outline-none font-mono custom-scrollbar" placeholder="Paste transaction SMS or raw CSV lines here... (e.g. 'Spent Rs 480.00 at Swiggy UPI/309482 via HDFC bank on 24-Oct-26')"></textarea>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <div class="flex items-center gap-2">
+                                    <label class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 rounded cursor-pointer border border-slate-700 flex items-center gap-1">
+                                        <i class="fa-solid fa-file-pdf text-red-400"></i> Select PDF/CSV File
+                                        <input type="file" id="file-upload" class="hidden" onchange="handleFileUpload(event)">
+                                    </label>
+                                    <span id="file-name" class="text-xs text-slate-500 italic">No file chosen</span>
+                                </div>
+                                <button onclick="processRawText()" class="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold text-xs rounded-lg transition-colors flex items-center gap-1">
+                                    <i class="fa-solid fa-gears"></i> Parse & Categorize
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Active Rules Pill Display -->
+                        <div class="mt-4 pt-3 border-t border-slate-800/80">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs font-semibold text-slate-400">Learned Rule Engine (Self-Correction Loop):</span>
+                                <span id="rule-count" class="text-xs text-emerald-400 font-mono">3 Active Rules</span>
+                            </div>
+                            <div id="rules-list" class="flex flex-wrap gap-2">
+                                <!-- Dynamic Rules will appear here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Categorized Feed & Correction Table -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-list-check text-emerald-400"></i> Smart Transactions Feed
+                                </h3>
+                                <p class="text-xs text-slate-400">Change any category to trigger the continuous learning feedback loop.</p>
+                            </div>
+                            <span class="text-xs text-slate-400"><strong id="tx-count">0</strong> Transactions parsed</span>
+                        </div>
+
+                        <div class="overflow-x-auto custom-scrollbar">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                                    <tr>
+                                        <th class="p-3">Date</th>
+                                        <th class="p-3">Description / Merchant</th>
+                                        <th class="p-3 text-right">Amount (₹)</th>
+                                        <th class="p-3">AI Category (Click to Edit)</th>
+                                        <th class="p-3 text-center">Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tx-table-body" class="divide-y divide-slate-800/60 font-mono">
+                                    <!-- Dynamic rows inserted by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Column 3: Subscription & Recurring Payment Detector -->
+                <div class="space-y-6">
+
+                    <!-- Subscription Audit Card -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2">
+                                <i class="fa-solid fa-rotate-right text-emerald-400"></i> Subscription & Recurring Audit
+                            </h3>
+                            <span class="text-xs text-amber-400 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">2 Alerts</span>
+                        </div>
+                        <p class="text-xs text-slate-400 mb-4">Detected from repeating bank signatures & debit patterns.</p>
+
+                        <div id="subscriptions-list" class="space-y-3">
+                            <!-- Dynamic Subscriptions inserted here -->
+                        </div>
+
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Total Recurring Monthly Burn:</span>
+                            <span class="font-bold text-white font-mono text-sm">₹<span id="sub-total-burn">14,349</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Goals & Persistent Model Overview -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+                        <h3 class="text-base font-bold text-white mb-3 flex items-center gap-2">
+                            <i class="fa-solid fa-bullseye text-emerald-400"></i> Financial Goals & Timeline
+                        </h3>
+                        <div id="goals-list" class="space-y-4">
+                            <!-- Dynamic Goals inserted here -->
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- TAB 2: WHAT-IF SCENARIO SIMULATOR LAB -->
+        <div id="tab-simulator" class="hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-sm">
+                <div class="max-w-3xl mb-6">
+                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-emerald-400"></i> Interactive What-If Scenario Lab
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">
+                        Test behavioral changes and life events in real-time. Model how altering variable spending or fixed obligations shifts your long-term goal completion dates and safety runway.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <!-- Controls Column -->
+                    <div class="space-y-6 bg-slate-950 p-5 rounded-xl border border-slate-800">
+                        <h3 class="text-sm font-bold text-slate-200 uppercase tracking-wider border-b border-slate-800 pb-2">Scenario Controls</h3>
+
+                        <!-- Slider 1: Dining Out Cut -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <label class="text-slate-300">Cut Dining Out / Swiggy Spending</label>
+                                <span id="val-dining-cut" class="text-emerald-400 font-mono font-bold">20%</span>
+                            </div>
+                            <input type="range" id="slider-dining" min="0" max="60" value="20" step="5" class="w-full accent-emerald-500 cursor-pointer" oninput="updateScenario()">
+                            <p class="text-[11px] text-slate-500">Reduces variable food costs (Current: ₹18,000/mo)</p>
+                        </div>
+
+                        <!-- Slider 2: Rent Change -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs font-semibold">
+                                <label class="text-slate-300">Rent Increase / Fixed Shift</label>
+                                <span id="val-rent-change" class="text-amber-400 font-mono font-bold">+₹2,500</span>
+                            </div>
+                            <input type="range" id="slider-rent" min="-5000" max="15000" value="2500" step="500" class="w-full accent-amber-500 cursor-pointer" oninput="updateScenario()">
+                            <p class="text-[11px] text-slate-500">Models upcoming lease renewal or rent hike</p>
+                        </div>
+
+                        <!-- Toggle: Extra SIP / Goal Allocation -->
+                        <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
+                            <div>
+                                <div class="text-xs font-semibold text-slate-200">Extra Emergency SIP</div>
+                                <div class="text-[11px] text-slate-500">Add ₹5,000/mo directly to runway</div>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggle-sip" class="sr-only peer" onchange="updateScenario()" checked>
+                                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600"></div>
+                            </label>
+                        </div>
+
+                        <!-- Reset Button -->
+                        <button onclick="resetScenarioControls()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-300 rounded-lg transition-colors">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Reset Controls to Baseline
+                        </button>
+                    </div>
+
+                    <!-- Scenario Results & Dynamic Chart Column -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- Stat Highlights -->
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                                <div class="text-xs text-slate-400">Monthly Net Savings Buffer</div>
+                                <div id="sim-monthly-buffer" class="text-xl font-bold text-emerald-400 font-mono mt-1">₹41,800</div>
+                                <div id="sim-buffer-diff" class="text-[10px] text-emerald-400/80 font-mono mt-0.5">+₹3,600 / mo vs baseline</div>
+                            </div>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                                <div class="text-xs text-slate-400">Emergency Fund Completion</div>
+                                <div id="sim-ef-target" class="text-xl font-bold text-amber-400 font-mono mt-1">Apr 2027</div>
+                                <div id="sim-ef-diff" class="text-[10px] text-emerald-400 font-mono mt-0.5">Accelerated by 3.5 months</div>
+                            </div>
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
+                                <div class="text-xs text-slate-400">House Down Payment Goal</div>
+                                <div id="sim-house-target" class="text-xl font-bold text-teal-400 font-mono mt-1">Nov 2028</div>
+                                <div id="sim-house-diff" class="text-[10px] text-emerald-400 font-mono mt-0.5">Advanced by 1.5 months</div>
+                            </div>
+                        </div>
+
+                        <!-- Chart Container -->
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs font-semibold text-slate-400 mb-2">12-Month Projected Savings Capital Accumulation (₹)</div>
+                            <div class="h-64 relative">
+                                <canvas id="scenarioChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Dynamic Monthly Financial Health Review Report -->
+    <div id="report-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar shadow-2xl p-6 space-y-6">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold">
+                        <i class="fa-solid fa-file-invoice"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Monthly Financial Health Review</h2>
+                        <p class="text-xs text-slate-400">Generated for Period: October 2026 • Living Money Model</p>
+                    </div>
+                </div>
+                <button onclick="closeReportModal()" class="text-slate-400 hover:text-white p-2 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Report Body Content -->
+            <div class="space-y-4 text-xs text-slate-300">
+                <!-- Health Score Banner -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                    <div>
+                        <div class="text-slate-400">Nivesha Behavioral Health Score</div>
+                        <div class="text-2xl font-black text-emerald-400 font-mono mt-0.5">78 / 100 <span class="text-xs font-semibold text-emerald-500 font-sans">(Good Standing)</span></div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-slate-400">Savings Rate</div>
+                        <div class="text-lg font-bold text-white font-mono">24.5%</div>
+                    </div>
+                </div>
+
+                <!-- Executive Summary -->
+                <div>
+                    <h4 class="font-bold text-white uppercase text-[11px] tracking-wider mb-2 text-emerald-400">Coach Summary & Behavioral Insights</h4>
+                    <p class="leading-relaxed text-slate-300 bg-slate-950/50 p-3 rounded-lg border border-slate-800/80">
+                        In October, total net cash inflow reached <strong>₹1,85,000</strong> against fixed commitments of <strong>₹92,500</strong>. Discretionary spending was slightly elevated due to dining out variances. However, rule-based auto-categorization helped catch ₹1,499 in unused streaming services. Emergency runway is currently secured for <strong>4.2 months</strong>.
+                    </p>
+                </div>
+
+                <!-- Breakdown Metrics Table -->
+                <div>
+                    <h4 class="font-bold text-white uppercase text-[11px] tracking-wider mb-2 text-emerald-400">Burn & Allocation Breakdown</h4>
+                    <div class="bg-slate-950 rounded-lg overflow-hidden border border-slate-800">
+                        <table class="w-full text-left font-mono">
+                            <thead class="bg-slate-900 text-slate-400">
+                                <tr>
+                                    <th class="p-2.5">Category Bucket</th>
+                                    <th class="p-2.5 text-right">Actual Outflow</th>
+                                    <th class="p-2.5 text-right">Target Allocation</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/50">
+                                <tr>
+                                    <td class="p-2.5">Fixed Commitments (Rent, EMI, SIP)</td>
+                                    <td class="p-2.5 text-right text-white">₹92,500</td>
+                                    <td class="p-2.5 text-right text-slate-400">₹90,000</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2.5">Dining & Groceries</td>
+                                    <td class="p-2.5 text-right text-amber-400">₹24,800</td>
+                                    <td class="p-2.5 text-right text-slate-400">₹20,000</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2.5">Shopping & Subscriptions</td>
+                                    <td class="p-2.5 text-right text-white">₹14,500</td>
+                                    <td class="p-2.5 text-right text-slate-400">₹15,000</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-2.5">Emergency Fund Contribution</td>
+                                    <td class="p-2.5 text-right text-emerald-400">₹15,000</td>
+                                    <td class="p-2.5 text-right text-slate-400">₹15,000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Action Items -->
+                <div>
+                    <h4 class="font-bold text-white uppercase text-[11px] tracking-wider mb-2 text-emerald-400">Recommended Next Steps for Nov 2026</h4>
+                    <ul class="space-y-1.5 list-disc list-inside text-slate-300">
+                        <li>Cancel or pause <span class="text-amber-400 font-semibold">Cult.fit Pass</span> to recover ₹2,499/mo.</li>
+                        <li>Maintain the <span class="text-emerald-400 font-semibold">20% Dining Out cap</span> via What-If scenario model.</li>
+                        <li>Reallocate ₹3,500 surplus directly to the House Down Payment Goal SIP.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Buttons -->
+            <div class="pt-4 border-t border-slate-800 flex justify-end gap-3">
+                <button onclick="closeReportModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 rounded-lg transition-colors">
+                    Close
+                </button>
+                <button onclick="downloadReportSummary()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-xs font-bold text-slate-950 rounded-lg transition-colors flex items-center gap-1.5">
+                    <i class="fa-solid fa-download"></i> Download Summary TXT
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // ----------------------------------------------------
+        // STATE MANAGEMENT & DATA MODELS
+        // ----------------------------------------------------
+        const state = {
+            income: 185000,
+            fixedCosts: 92500,
+            emergencyFundSaved: 388500,
+            emergencyFundTargetMonths: 6,
+            goals: [
+                { id: 'g1', name: 'Emergency Reserve (6 Mos)', target: 555000, saved: 388500, date: 'Apr 2027', icon: 'fa-shield-halved', color: 'amber' },
+                { id: 'g2', name: 'Europe Summer Trip', target: 250000, saved: 140000, date: 'Oct 2027', icon: 'fa-plane', color: 'teal' },
+                { id: 'g3', name: 'House Down Payment', target: 2000000, saved: 650000, date: 'Dec 2028', icon: 'fa-house-chimney', color: 'emerald' }
+            ],
+            learnedRules: [
+                { keyword: 'SWIGGY', category: 'Dining Out' },
+                { keyword: 'ZOMATO', category: 'Dining Out' },
+                { keyword: 'NETFLIX', category: 'Subscriptions' }
+            ],
+            transactions: [
+                { id: 1, date: '2026-10-28', desc: 'Swiggy order #9482 Bengaluru', amount: 680, category: 'Dining Out', confidence: '98%', learned: true },
+                { id: 2, date: '2026-10-27', desc: 'Uber India Trip #40291', amount: 420, category: 'Commute', confidence: '92%', learned: false },
+                { id: 3, date: '2026-10-25', desc: 'Netflix Monthly Premium Sub', amount: 649, category: 'Subscriptions', confidence: '99%', learned: true },
+                { id: 4, date: '2026-10-24', desc: 'Cult.fit Gym Monthly Auto-Debit', amount: 2499, category: 'Health & Fitness', confidence: '94%', learned: false },
+                { id: 5, date: '2026-10-22', desc: 'Reliance Smart Supermarket', amount: 3450, category: 'Groceries', confidence: '89%', learned: false },
+                { id: 6, date: '2026-10-20', desc: 'HDFC Bank Home Loan EMI', amount: 45000, category: 'Housing & EMI', confidence: '99%', learned: false }
+            ],
+            subscriptions: [
+                { id: 's1', name: 'Cult.fit Pass', amount: 2499, cycle: 'Monthly', status: 'flagged', note: 'No app activity in 45 days', flagType: 'Unused' },
+                { id: 's2', name: 'Netflix Premium', amount: 649, cycle: 'Monthly', status: 'flagged', note: 'Price increased +₹150 last month', flagType: 'Price Hike' },
+                { id: 's3', name: 'Disney+ Hotstar', amount: 1499, cycle: 'Annual', status: 'active', note: 'Renews in 18 days', flagType: 'Renewal Soon' },
+                { id: 's4', name: 'Nippon India Small Cap SIP', amount: 10000, cycle: 'Monthly', status: 'active', note: 'Auto-debited on 5th', flagType: 'SIP' }
+            ]
+        };
+
+        let scenarioChartInstance = null;
+
+        // ----------------------------------------------------
+        // INITIALIZATION
+        // ----------------------------------------------------
+        window.onload = function() {
+            renderDashboard();
+            initScenarioChart();
+            updateScenario();
+        };
+
+        // ----------------------------------------------------
+        // TAB SWITCHER
+        // ----------------------------------------------------
+        function switchTab(tabName) {
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-simulator').classList.add('hidden');
+
+            document.getElementById('nav-dashboard').className = "nav-btn px-3 py-1.5 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800";
+            document.getElementById('nav-simulator').className = "nav-btn px-3 py-1.5 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800";
+
+            if(tabName === 'dashboard') {
+                document.getElementById('tab-dashboard').classList.remove('hidden');
+                document.getElementById('nav-dashboard').className = "nav-btn px-3 py-1.5 text-sm font-medium rounded-lg text-emerald-400 bg-emerald-950/50 border border-emerald-500/30";
+            } else {
+                document.getElementById('tab-simulator').classList.remove('hidden');
+                document.getElementById('nav-simulator').className = "nav-btn px-3 py-1.5 text-sm font-medium rounded-lg text-emerald-400 bg-emerald-950/50 border border-emerald-500/30";
+                if(scenarioChartInstance) scenarioChartInstance.resize();
+            }
+        }
+
+        // ----------------------------------------------------
+        // RENDER FUNCTIONS
+        // ----------------------------------------------------
+        function renderDashboard() {
+            renderRules();
+            renderTransactions();
+            renderSubscriptions();
+            renderGoals();
+        }
+
+        function renderRules() {
+            const list = document.getElementById('rules-list');
+            document.getElementById('rule-count').innerText = `${state.learnedRules.length} Active Rules`;
+            list.innerHTML = state.learnedRules.map(r => `
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-xs text-slate-300 font-mono">
+                    <i class="fa-solid fa-code-commit text-emerald-400 text-[10px]"></i>
+                    "${r.keyword}" &rarr; <strong class="text-white">${r.category}</strong>
+                </span>
+            `).join('');
+        }
+
+        function renderTransactions() {
+            const tbody = document.getElementById('tx-table-body');
+            document.getElementById('tx-count').innerText = state.transactions.length;
+
+            tbody.innerHTML = state.transactions.map(tx => {
+                const categories = ['Dining Out', 'Groceries', 'Subscriptions', 'Commute', 'Housing & EMI', 'Health & Fitness', 'Shopping', 'Utilities'];
+                const options = categories.map(c => `<option value="${c}" ${c === tx.category ? 'selected' : ''}>${c}</option>`).join('');
+
+                return `
+                    <tr class="hover:bg-slate-900/50 transition-colors">
+                        <td class="p-3 text-slate-400">${tx.date}</td>
+                        <td class="p-3 font-sans font-medium text-white">${tx.desc}</td>
+                        <td class="p-3 text-right font-bold text-white">₹${tx.amount.toLocaleString('en-IN')}</td>
+                        <td class="p-3">
+                            <select onchange="handleCategoryCorrection(${tx.id}, this.value)" class="bg-slate-950 border ${tx.learned ? 'border-emerald-500/50 text-emerald-300' : 'border-slate-700 text-slate-200'} rounded px-2 py-1 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-none">
+                                ${options}
+                            </select>
+                        </td>
+                        <td class="p-3 text-center">
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-sans ${parseInt(tx.confidence) > 90 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">
+                                ${tx.confidence}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderSubscriptions() {
+            const container = document.getElementById('subscriptions-list');
+            container.innerHTML = state.subscriptions.map(sub => `
+                <div class="p-3 bg-slate-950 border border-slate-800 rounded-lg flex items-center justify-between">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-xs text-white">${sub.name}</span>
+                            ${sub.flagType === 'Unused' ? `<span class="px-1.5 py-0.5 rounded text-[10px] bg-red-500/10 text-red-400 border border-red-500/20 font-medium">Unused</span>` : ''}
+                            ${sub.flagType === 'Price Hike' ? `<span class="px-1.5 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">+₹150 Hike</span>` : ''}
+                        </div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">${sub.note}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold font-mono text-xs text-white">₹${sub.amount.toLocaleString('en-IN')}<span class="text-[10px] text-slate-500">/${sub.cycle === 'Monthly' ? 'mo' : 'yr'}</span></div>
+                        ${sub.status === 'flagged' ? `
+                            <button onclick="cancelSubscription('${sub.id}')" class="mt-1 text-[10px] text-red-400 hover:text-red-300 underline font-medium">
+                                Mark to Cancel
+                            </button>
+                        ` : `<span class="text-[10px] text-emerald-400">Active</span>`}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderGoals() {
+            const container = document.getElementById('goals-list');
+            container.innerHTML = state.goals.map(g => {
+                const pct = Math.min(100, Math.round((g.saved / g.target) * 100));
+                return `
+                    <div class="space-y-1.5">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-bold text-slate-200 flex items-center gap-1.5">
+                                <i class="fa-solid ${g.icon} text-${g.color}-400"></i> ${g.name}
+                            </span>
+                            <span class="font-mono text-slate-400">Target: <strong class="text-white">${g.date}</strong></span>
+                        </div>
+                        <div class="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+                            <div class="bg-${g.color}-500 h-full rounded-full" style="width: ${pct}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-slate-400 font-mono">
+                            <span>₹${g.saved.toLocaleString('en-IN')} saved (${pct}%)</span>
+                            <span>Target: ₹${g.target.toLocaleString('en-IN')}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ----------------------------------------------------
+        // CORRECTION LOOP & AI RULE LEARNING
+        // ----------------------------------------------------
+        function handleCategoryCorrection(txId, newCategory) {
+            const tx = state.transactions.find(t => t.id === txId);
+            if (!tx) return;
+
+            const oldCategory = tx.category;
+            tx.category = newCategory;
+
+            // Extract main keyword from description (e.g., 'Swiggy' from 'Swiggy order #9482 Bengaluru')
+            const keyword = tx.desc.split(' ')[0].toUpperCase();
+
+            // Check if rule already exists
+            const existingRule = state.learnedRules.find(r => r.keyword === keyword);
+            if (existingRule) {
+                existingRule.category = newCategory;
+            } else {
+                state.learnedRules.push({ keyword, category: newCategory });
+            }
+
+            // Re-apply rules to all transactions matching this keyword
+            state.transactions.forEach(t => {
+                if (t.desc.toUpperCase().includes(keyword)) {
+                    t.category = newCategory;
+                    t.confidence = '99% (Rule)';
+                    t.learned = true;
+                }
+            });
+
+            renderDashboard();
+
+            showToast(`Learned Rule: Map "${keyword}" &rarr; ${newCategory}`, 'success');
+        }
+
+        // ----------------------------------------------------
+        // RAW TEXT & SAMPLE PARSER
+        // ----------------------------------------------------
+        function loadSampleTransactions() {
+            const rawSample = `Spent Rs 480.00 at Swiggy UPI/309482 via HDFC Bank on 29-Oct-26
+Txn Rs 1250.00 at Zomato Online order on 28-Oct-26
+Auto-Debit Rs 649.00 Netflix Entertainment India on 27-Oct-26
+Spent Rs 1850.00 at Shell Fuel Station Mumbai on 26-Oct-26`;
+            
+            document.getElementById('raw-input').value = rawSample;
+            showToast('Loaded 4 messy bank SMS samples!', 'info');
+        }
+
+        function processRawText() {
+            const text = document.getElementById('raw-input').value.trim();
+            if(!text) {
+                showToast('Please paste transaction text or select a file.', 'error');
+                return;
+            }
+
+            const lines = text.split('\n');
+            let newAdded = 0;
+
+            lines.forEach((line, idx) => {
+                if(!line.trim()) return;
+
+                // Simple regex parser simulation for amount & merchant
+                const amountMatch = line.match(/(?:Rs|INR|₹)\s?([\d,]+(?:\.\d{2})?)/i);
+                const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : Math.floor(Math.random() * 1500) + 200;
+                
+                // Categorize using learned rules
+                let assignedCat = 'Discretionary';
+                let confidence = '78%';
+                let learned = false;
+
+                state.learnedRules.forEach(r => {
+                    if (line.toUpperCase().includes(r.keyword)) {
+                        assignedCat = r.category;
+                        confidence = '99% (Rule Match)';
+                        learned = true;
+                    }
+                });
+
+                if(!learned) {
+                    if (line.toLowerCase().includes('fuel') || line.toLowerCase().includes('shell')) assignedCat = 'Commute';
+                    else if (line.toLowerCase().includes('zomato') || line.toLowerCase().includes('swiggy')) assignedCat = 'Dining Out';
+                    else if (line.toLowerCase().includes('netflix')) assignedCat = 'Subscriptions';
+                }
+
+                state.transactions.unshift({
+                    id: Date.now() + idx,
+                    date: '2026-10-30',
+                    desc: line.length > 35 ? line.substring(0, 35) + '...' : line,
+                    amount: amount,
+                    category: assignedCat,
+                    confidence: confidence,
+                    learned: learned
+                });
+                newAdded++;
+            });
+
+            document.getElementById('raw-input').value = '';
+            renderDashboard();
+            showToast(`Parsed & Auto-Categorized ${newAdded} new transactions!`, 'success');
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if(file) {
+                document.getElementById('file-name').innerText = file.name;
+                showToast(`Loaded ${file.name}. Click 'Parse & Categorize' to process.`, 'info');
+                document.getElementById('raw-input').value = `[File Parse Simulation for: ${file.name}]\nSpent Rs 2400.00 at D-Mart Supermarket on 28-Oct-26\nSpent Rs 850.00 at Starbucks Coffee on 27-Oct-26`;
+            }
+        }
+
+        function cancelSubscription(subId) {
+            state.subscriptions = state.subscriptions.filter(s => s.id !== subId);
+            renderSubscriptions();
+            
+            // Recalculate Total Burn
+            const newTotal = state.subscriptions.reduce((acc, curr) => acc + curr.amount, 0);
+            document.getElementById('sub-total-burn').innerText = newTotal.toLocaleString('en-IN');
+            
+            showToast('Subscription canceled! Living money model updated.', 'success');
+        }
+
+        function applyNudgeRecommendation(type) {
+            if (type === 'dining') {
+                document.getElementById('slider-dining').value = 25;
+                switchTab('simulator');
+                showToast('Applied 25% Dining Cut in What-If Simulator!', 'info');
+            } else if (type === 'ef-boost') {
+                state.emergencyFundSaved += 5000;
+                document.getElementById('card-ef-val').innerText = state.emergencyFundSaved.toLocaleString('en-IN');
+                document.getElementById('card-ef-months').innerText = (state.emergencyFundSaved / (state.fixedCosts / 30 * 30 * 0.6)).toFixed(1);
+                renderGoals();
+                showToast('Transferred ₹5,000 to Emergency Reserve!', 'success');
+            }
+        }
+
+        // ----------------------------------------------------
+        // WHAT-IF SCENARIO LAB & CHART.JS MODELING
+        // ----------------------------------------------------
+        function initScenarioChart() {
+            const ctx = document.getElementById('scenarioChart').getContext('2d');
+            scenarioChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Current', 'Month 2', 'Month 4', 'Month 6', 'Month 8', 'Month 10', 'Month 12'],
+                    datasets: [
+                        {
+                            label: 'Baseline Projections (₹)',
+                            data: [388500, 426700, 464900, 503100, 541300, 579500, 617700],
+                            borderColor: '#64748b',
+                            borderDash: [5, 5],
+                            backgroundColor: 'transparent',
+                            tension: 0.3
+                        },
+                        {
+                            label: 'Modeled Scenario Projections (₹)',
+                            data: [388500, 430300, 472100, 513900, 555700, 597500, 639300],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 } } }
+                    },
+                    scales: {
+                        x: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } }
+                    }
+                }
+            });
+        }
+
+        function updateScenario() {
+            const diningCutPct = parseInt(document.getElementById('slider-dining').value);
+            const rentChange = parseInt(document.getElementById('slider-rent').value);
+            const sipEnabled = document.getElementById('toggle-sip').checked;
+
+            document.getElementById('val-dining-cut').innerText = `${diningCutPct}%`;
+            document.getElementById('val-rent-change').innerText = `${rentChange >= 0 ? '+' : ''}₹${rentChange.toLocaleString('en-IN')}`;
+
+            // Calculation engine
+            const baselineDining = 18000;
+            const diningSavings = baselineDining * (diningCutPct / 100);
+            const extraSip = sipEnabled ? 5000 : 0;
+            const netMonthlyDelta = diningSavings - rentChange + extraSip;
+
+            const baselineBuffer = 38200;
+            const modeledBuffer = baselineBuffer + netMonthlyDelta;
+
+            document.getElementById('sim-monthly-buffer').innerText = `₹${modeledBuffer.toLocaleString('en-IN')}`;
+            
+            const diffElem = document.getElementById('sim-buffer-diff');
+            diffElem.innerText = `${netMonthlyDelta >= 0 ? '+' : ''}₹${netMonthlyDelta.toLocaleString('en-IN')} / mo vs baseline`;
+            diffElem.className = `text-[10px] font-mono mt-0.5 ${netMonthlyDelta >= 0 ? 'text-emerald-400' : 'text-red-400'}`;
+
+            // Update chart data dynamically
+            if(scenarioChartInstance) {
+                const startVal = state.emergencyFundSaved;
+                const baselineMonthly = 38200;
+                const newMonthly = modeledBuffer;
+
+                const newChartData = [0, 2, 4, 6, 8, 10, 12].map(m => startVal + (newMonthly * m));
+                scenarioChartInstance.data.datasets[1].data = newChartData;
+                scenarioChartInstance.update();
+            }
+        }
+
+        function resetScenarioControls() {
+            document.getElementById('slider-dining').value = 20;
+            document.getElementById('slider-rent').value = 2500;
+            document.getElementById('toggle-sip').checked = true;
+            updateScenario();
+            showToast('Scenario parameters reset to default.', 'info');
+        }
+
+        // ----------------------------------------------------
+        // MONTHLY REVIEW REPORT MODAL
+        // ----------------------------------------------------
+        function openReportModal() {
+            document.getElementById('report-modal').classList.remove('hidden');
+        }
+
+        function closeReportModal() {
+            document.getElementById('report-modal').classList.add('hidden');
+        }
+
+        function downloadReportSummary() {
+            const reportText = `=====================================================
+NIVESHA LIVING MONEY MODEL - MONTHLY FINANCIAL REVIEW
+Period: October 2026
+-----------------------------------------------------
+Nivesha Behavioral Health Score: 78 / 100
+Monthly Net Income: ₹1,85,000
+Fixed Commitments: ₹92,500
+Savings Rate: 24.5%
+Emergency Reserve Status: 4.2 Months (₹3,88,500)
+
+COACH ACTION PLAN FOR NOV 2026:
+1. Cancel Cult.fit Pass to recover ₹2,499/mo.
+2. Keep Dining Out spending under 20% savings threshold.
+3. Advance House Down Payment goal timeline by 1.5 months.
+
+Disclaimer: Educational & Scenario Modeling Tool Only.
+=====================================================`;
+
+            const blob = new Blob([reportText], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'Nivesha_Monthly_Review_Oct2026.txt';
+            link.click();
+            showToast('Downloaded Monthly Review Summary!', 'success');
+        }
+
+        // ----------------------------------------------------
+        // UTILITY: TOAST NOTIFICATIONS
+        // ----------------------------------------------------
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const colorClass = type === 'success' 
+                ? 'bg-emerald-950 border-emerald-500/50 text-emerald-200' 
+                : type === 'error' 
+                ? 'bg-red-950 border-red-500/50 text-red-200' 
+                : 'bg-slate-900 border-slate-700 text-slate-200';
+
+            toast.className = `p-3 rounded-lg border text-xs shadow-lg flex items-center gap-2 transition-all duration-300 transform translate-y-2 ${colorClass}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${type === 'success' ? 'fa-circle-check text-emerald-400' : type === 'error' ? 'fa-circle-exclamation text-red-400' : 'fa-circle-info text-teal-400'}"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

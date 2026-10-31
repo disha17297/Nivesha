@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { HeaderNav } from './components/HeaderNav';
-import { RealTimeBalanceSheet } from './components/RealTimeBalanceSheet';
-import { LivingMoneyModelCenter } from './components/LivingMoneyModelCenter';
-import { IngestionSandboxRight } from './components/IngestionSandboxRight';
+import { FinancialSummaryBanner } from './components/FinancialSummaryBanner';
+import { DashboardMainView } from './components/DashboardMainView';
+import { WhatIfScenarioLab } from './components/WhatIfScenarioLab';
 import { KnowledgeGraphModal } from './components/KnowledgeGraphModal';
 import { MonthlyReviewModal } from './components/MonthlyReviewModal';
 import {
@@ -29,16 +29,25 @@ import {
 } from './services/agenticShields';
 import { INITIAL_TRANSACTIONS } from './services/mockTransactions';
 import { correctionMemory } from './services/correctionMemory';
+import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
+
+interface ToastItem {
+  id: string;
+  message: string;
+  type: 'success' | 'info' | 'error';
+}
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'simulator'>('dashboard');
+
   // Financial profile state
   const [profile, setProfile] = useState<UserFinancialProfile>(INITIAL_USER_PROFILE);
 
   // Scenario deltas state
   const [deltas, setDeltas] = useState<ScenarioDeltas>({
-    rent_hike_pct: 0,
+    rent_hike_pct: 0.0595, // ~+₹2,500 on ₹42,000 base
     salary_shift_pct: 0,
-    discretionary_cut_pct: 0,
+    discretionary_cut_pct: -0.20, // 20% Dining cut default as in attached design
     emergency_shock_amount: 0,
     emergency_shock_month: 3,
     discretionary_volatility: 0.2,
@@ -65,7 +74,7 @@ export default function App() {
       sender: 'coach',
       persona: 'analytical',
       content:
-        "Welcome to Nivesha: Your Money, Your Way. Your living money model is active across all 5 accounts. Your current survival runway is 10.4 months, and your Home Down Payment milestone is on trajectory with an 84% Monte Carlo confidence rate. I've flagged 2 creeping subscriptions and 1 dormant gym membership. How can we optimize your model today?",
+        "Welcome to Nivesha: Your Money, Your Way. Your living money model is active across all 5 accounts. Your current survival runway is 4.2 months, and your Home Down Payment milestone is modeled with an 84% Monte Carlo confidence rate. I've flagged 2 creeping subscriptions and 1 dormant gym membership. How can we optimize your model today?",
       timestamp: new Date().toISOString(),
       compliance_checked: true,
       reframed_from_security: false,
@@ -85,16 +94,25 @@ export default function App() {
   );
   const [isSweepExecuting, setIsSweepExecuting] = useState<boolean>(false);
 
-  // Modals and Nav
+  // Modals
   const [isGraphModalOpen, setIsGraphModalOpen] = useState<boolean>(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState<boolean>(false);
-  const [activeSection, setActiveSection] = useState<string>('overview');
+
+  // Dynamic Toast Notifications
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  const showToast = (message: string, type: 'success' | 'info' | 'error' = 'info') => {
+    const id = `toast_${Date.now()}_${Math.random()}`;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
+  };
 
   // Recalculate metrics whenever profile or deltas update
   const health = calculateFinancialHealth(profile);
 
   useEffect(() => {
-    // Re-run simulation dynamically on delta or profile changes
     const result = runMonteCarloSimulation(profile, deltas, 1000, 24);
     setSimulation(result);
   }, [deltas, profile]);
@@ -103,28 +121,37 @@ export default function App() {
     setDeltas(newDeltas);
   };
 
+  const handleResetControls = () => {
+    setDeltas({
+      rent_hike_pct: 0.0595,
+      salary_shift_pct: 0,
+      discretionary_cut_pct: -0.20,
+      emergency_shock_amount: 0,
+      emergency_shock_month: 3,
+      discretionary_volatility: 0.2,
+      annual_inflation: 0.06,
+      annual_liquid_yield: 0.075,
+    });
+    showToast('Scenario parameters reset to default baseline.', 'info');
+  };
+
   const handleApplyQuickScenario = (
     type: 'rent_hike' | 'salary_hike' | 'capital_shock' | 'frugal_sprint' | 'reset'
   ) => {
     if (type === 'rent_hike') {
       setDeltas((prev) => ({ ...prev, rent_hike_pct: 0.2 }));
+      showToast('Applied +20% Rent Surge scenario!', 'info');
     } else if (type === 'salary_hike') {
       setDeltas((prev) => ({ ...prev, salary_shift_pct: 0.25 }));
+      showToast('Applied +25% Promotion Salary Hike!', 'success');
     } else if (type === 'capital_shock') {
       setDeltas((prev) => ({ ...prev, emergency_shock_amount: 1000000 }));
+      showToast('Applied -₹1,000,000 Emergency Shock scenario!', 'error');
     } else if (type === 'frugal_sprint') {
       setDeltas((prev) => ({ ...prev, discretionary_cut_pct: -0.35 }));
+      showToast('Applied -35% Discretionary Frugal Sprint!', 'success');
     } else {
-      setDeltas({
-        rent_hike_pct: 0,
-        salary_shift_pct: 0,
-        discretionary_cut_pct: 0,
-        emergency_shock_amount: 0,
-        emergency_shock_month: 3,
-        discretionary_volatility: 0.2,
-        annual_inflation: 0.06,
-        annual_liquid_yield: 0.075,
-      });
+      handleResetControls();
     }
   };
 
@@ -132,63 +159,77 @@ export default function App() {
     setTransactions((prev) => [...newTxs, ...prev]);
   };
 
-  const handleRegisterRule = async (
-    merchant: string,
-    newCategory: string,
-    secondaryCategory?: string,
-    oldCategory?: string,
-    matchType: 'exact' | 'contains' | 'amount_range' = 'exact',
-    amount?: number
-  ) => {
-    try {
-      const res = await fetch('/api/v1/rules/correct', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          merchant,
-          new_category: newCategory,
-          secondary_category: secondaryCategory,
-          old_category: oldCategory,
-          match_type: matchType,
-          amount,
-        }),
-      });
-      const data = await res.json();
-      if (data.success && data.all_rules) {
-        setRules(data.all_rules);
-      } else {
-        const localRule = correctionMemory.registerCorrection(
-          merchant,
-          newCategory,
-          secondaryCategory,
-          oldCategory,
-          matchType,
-          amount
-        );
-        setRules(correctionMemory.getRules());
-      }
+  const handleUpdateTransactionCategory = (txId: string, newCategory: string) => {
+    const targetTx = transactions.find((t) => t.transaction_id === txId);
+    if (!targetTx) return;
 
-      // Re-categorize existing transactions matching this rule
-      setTransactions((prev) =>
-        prev.map((t) => {
-          if (t.merchant.toLowerCase().includes(merchant.toLowerCase())) {
-            return {
-              ...t,
-              category_primary: newCategory,
-              category_secondary: secondaryCategory || 'User Rule',
-            };
-          }
-          return t;
-        })
-      );
-    } catch (err) {
-      console.error(err);
-    }
+    const oldCategory = targetTx.category_primary;
+    const keyword = targetTx.merchant.split(' ')[0].toUpperCase();
+
+    // Register into active correction memory
+    const newRule = correctionMemory.registerCorrection(
+      keyword,
+      newCategory,
+      'User Reclassified',
+      oldCategory,
+      'exact'
+    );
+    setRules(correctionMemory.getRules());
+
+    // Update all matching transactions
+    setTransactions((prev) =>
+      prev.map((t) => {
+        if (t.transaction_id === txId || t.merchant.toUpperCase().includes(keyword)) {
+          return {
+            ...t,
+            category_primary: newCategory,
+            confidence_score: 0.99,
+            applied_rule_id: newRule.rule_id,
+          };
+        }
+        return t;
+      })
+    );
+
+    showToast(`Learned Rule: Map "${keyword}" &rarr; ${newCategory}`, 'success');
   };
 
   const handleDeleteRule = (ruleId: string) => {
     correctionMemory.deleteRule(ruleId);
     setRules(correctionMemory.getRules());
+    showToast('Learned rule removed from memory.', 'info');
+  };
+
+  const handleCancelSubscription = (subId: string) => {
+    const sub = profile.subscriptions.find((s) => s.id === subId);
+    setProfile((prev) => ({
+      ...prev,
+      subscriptions: prev.subscriptions.filter((s) => s.id !== subId),
+    }));
+    showToast(
+      `Subscription ${sub?.merchant || ''} marked to cancel! Living money model updated.`,
+      'success'
+    );
+  };
+
+  const handleApplyNudge = (type: 'dining' | 'ef_boost') => {
+    if (type === 'dining') {
+      setDeltas((prev) => ({ ...prev, discretionary_cut_pct: -0.25 }));
+      setActiveTab('simulator');
+      showToast('Applied 25% Dining Cut in What-If Simulator!', 'info');
+    } else if (type === 'ef_boost') {
+      setProfile((prev) => {
+        const updated = JSON.parse(JSON.stringify(prev)) as UserFinancialProfile;
+        const chk = updated.accounts.find((a) => a.type === 'CHECKING');
+        const sav = updated.accounts.find((a) => a.id === 'acc_sav');
+        if (chk && sav) {
+          chk.balance -= 5000;
+          sav.balance += 5000;
+        }
+        return updated;
+      });
+      showToast('Transferred ₹5,000 to Emergency Reserve!', 'success');
+    }
   };
 
   const handleSendMessage = async (prompt: string, persona: CoachPersona) => {
@@ -210,6 +251,9 @@ export default function App() {
       const data = await res.json();
       if (data.success && data.message) {
         setCoachMessages((prev) => [...prev, data.message]);
+        if (data.message.reframed_from_security) {
+          showToast('SEBI Guardrail: Single-stock tip intercepted & reframed!', 'info');
+        }
       }
     } catch (err: any) {
       console.error(err);
@@ -230,18 +274,20 @@ export default function App() {
       if (data.success && data.updated_profile) {
         setProfile(data.updated_profile);
         setSweepStatus(data.sweep_status);
+        showToast(data.message, 'success');
       } else {
-        // Local execution fallback
         const excess = sweepStatus.excess_amount || 38500;
-        const updated = JSON.parse(JSON.stringify(profile)) as UserFinancialProfile;
-        const chk = updated.accounts.find((a) => a.type === 'CHECKING');
-        const sav = updated.accounts.find((a) => a.id === 'acc_sav');
-        if (chk && sav) {
-          chk.balance -= excess;
-          sav.balance += excess;
-          setProfile(updated);
-          setSweepStatus(evaluateLiquiditySweep(updated));
-        }
+        setProfile((prev) => {
+          const updated = JSON.parse(JSON.stringify(prev)) as UserFinancialProfile;
+          const chk = updated.accounts.find((a) => a.type === 'CHECKING');
+          const sav = updated.accounts.find((a) => a.id === 'acc_sav');
+          if (chk && sav) {
+            chk.balance -= excess;
+            sav.balance += excess;
+          }
+          return updated;
+        });
+        showToast(`Swept ₹${excess.toLocaleString('en-IN')} to High-Yield Reserve!`, 'success');
       }
     } catch (err) {
       console.error(err);
@@ -250,91 +296,98 @@ export default function App() {
     }
   };
 
-  const handleSelectSubscription = (subId: string) => {
-    const sub = profile.subscriptions.find((s) => s.id === subId);
-    if (!sub) return;
-    handleSendMessage(
-      `Can you analyze the subscription "${sub.merchant}" costing ₹${sub.amount_current}/mo? It was flagged as ${
-        sub.is_price_creep ? `Price Creep (+${sub.price_creep_pct}%)` : `Dormant (${sub.dormant_days} days idle)`
-      }.`,
-      activePersona
-    );
-  };
-
   return (
-    <div className="min-h-screen bg-[#020617] text-slate-100 flex flex-col">
-      {/* Sticky Header Nav adhering to Top Bar Contract */}
+    <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col font-sans">
+      {/* Header & Compliance Banner */}
       <HeaderNav
         onOpenGraph={() => setIsGraphModalOpen(true)}
         onOpenReview={() => setIsReviewModalOpen(true)}
-        onTriggerQuickStress={() => handleApplyQuickScenario('rent_hike')}
-        activeSection={activeSection}
-        onSelectSection={setActiveSection}
-        complianceActive={true}
+        activeTab={activeTab}
+        onSelectTab={setActiveTab}
       />
 
-      {/* Main 3-Column Responsive Dashboard Viewport */}
-      <main className="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8 py-6">
-        <div className="grid grid-cols-12 gap-6 items-start">
-          {/* Left Column: Real-Time Net Worth, Monthly Cash Flow Meter, Survival Runway Gauge */}
-          <section className="col-span-12 lg:col-span-3 order-2 lg:order-1">
-            <RealTimeBalanceSheet
-              profile={profile}
-              health={health}
-              onOpenGraph={() => setIsGraphModalOpen(true)}
-              onSelectSubscription={handleSelectSubscription}
-            />
-          </section>
+      {/* Main Body */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* Top 4 Summary Cards & Smart Nudges */}
+        <FinancialSummaryBanner
+          profile={profile}
+          health={health}
+          onApplyNudge={handleApplyNudge}
+        />
 
-          {/* Center Column: Interactive Living Money Model, Goal Trajectory Graph, Quick Scenario Buttons */}
-          <section className="col-span-12 lg:col-span-6 order-1 lg:order-2">
-            <LivingMoneyModelCenter
-              profile={profile}
-              simulation={simulation}
-              deltas={deltas}
-              onUpdateDeltas={handleUpdateDeltas}
-              velocity={velocity}
-              activePersona={activePersona}
-              onApplyQuickScenario={handleApplyQuickScenario}
-            />
-          </section>
-
-          {/* Right Column: Multi-Modal Ingestion Sandbox, AI Coach Chat Interface, Agentic Shield Toggles */}
-          <section className="col-span-12 lg:col-span-3 order-3">
-            <IngestionSandboxRight
-              transactions={transactions}
-              onAddTransactions={handleAddTransactions}
-              rules={rules}
-              onRegisterRule={handleRegisterRule}
-              onDeleteRule={handleDeleteRule}
-              coachMessages={coachMessages}
-              onSendMessage={handleSendMessage}
-              isCoachLoading={isCoachLoading}
-              activePersona={activePersona}
-              onSelectPersona={setActivePersona}
-              sweepStatus={sweepStatus}
-              onExecuteSweep={handleExecuteSweep}
-              isSweepExecuting={isSweepExecuting}
-              overdraftAlert={overdraftAlert}
-            />
-          </section>
-        </div>
+        {/* Dynamic Tab Views */}
+        {activeTab === 'dashboard' ? (
+          <DashboardMainView
+            transactions={transactions}
+            onAddTransactions={handleAddTransactions}
+            onUpdateTransactionCategory={handleUpdateTransactionCategory}
+            rules={rules}
+            onDeleteRule={handleDeleteRule}
+            subscriptions={profile.subscriptions}
+            onCancelSubscription={handleCancelSubscription}
+            goals={profile.goals}
+            coachMessages={coachMessages}
+            onSendMessage={handleSendMessage}
+            isCoachLoading={isCoachLoading}
+            activePersona={activePersona}
+            onSelectPersona={setActivePersona}
+            sweepStatus={sweepStatus}
+            onExecuteSweep={handleExecuteSweep}
+            isSweepExecuting={isSweepExecuting}
+            overdraftAlert={overdraftAlert}
+            onShowToast={showToast}
+          />
+        ) : (
+          <WhatIfScenarioLab
+            profile={profile}
+            simulation={simulation}
+            deltas={deltas}
+            onUpdateDeltas={handleUpdateDeltas}
+            onResetControls={handleResetControls}
+            onApplyQuickScenario={handleApplyQuickScenario}
+          />
+        )}
       </main>
 
-      {/* Interactive Financial Knowledge Graph Modal */}
+      {/* Dynamic Toast Notifications */}
+      <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none">
+        {toasts.map((t) => (
+          <div
+            key={t.id}
+            className={`p-3 rounded-lg border text-xs shadow-lg flex items-center gap-2 pointer-events-auto transition-all duration-300 ${
+              t.type === 'success'
+                ? 'bg-emerald-950 border-emerald-500/50 text-emerald-200'
+                : t.type === 'error'
+                ? 'bg-rose-950 border-rose-500/50 text-rose-200'
+                : 'bg-slate-900 border-slate-700 text-slate-200'
+            }`}
+          >
+            {t.type === 'success' ? (
+              <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+            ) : t.type === 'error' ? (
+              <AlertCircle className="h-4 w-4 text-rose-400 shrink-0" />
+            ) : (
+              <Info className="h-4 w-4 text-teal-400 shrink-0" />
+            )}
+            <span dangerouslySetInnerHTML={{ __html: t.message }} />
+          </div>
+        ))}
+      </div>
+
+      {/* Modals */}
       <KnowledgeGraphModal
         profile={profile}
         isOpen={isGraphModalOpen}
         onClose={() => setIsGraphModalOpen(false)}
       />
 
-      {/* Monthly Review Report Modal */}
       <MonthlyReviewModal
         profile={profile}
         health={health}
         velocity={velocity}
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
+        onShowToast={showToast}
       />
     </div>
   );

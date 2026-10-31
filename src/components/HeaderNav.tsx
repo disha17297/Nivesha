@@ -1,96 +1,100 @@
 import React from 'react';
-import { ShieldCheck, PlayCircle, FileText, Network } from 'lucide-react';
+import { ShieldAlert, LayoutDashboard, Sliders, FileText, Network, TrendingUp } from 'lucide-react';
 
 interface HeaderNavProps {
   onOpenGraph: () => void;
   onOpenReview: () => void;
-  onTriggerQuickStress: () => void;
-  activeSection: string;
-  onSelectSection: (section: string) => void;
-  complianceActive: boolean;
+  activeTab: 'dashboard' | 'simulator';
+  onSelectTab: (tab: 'dashboard' | 'simulator') => void;
 }
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({
   onOpenGraph,
   onOpenReview,
-  onTriggerQuickStress,
-  activeSection,
-  onSelectSection,
-  complianceActive,
+  activeTab,
+  onSelectTab,
 }) => {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-8 px-4 sm:px-6 lg:px-8">
-        {/* Zone 1: Brand wordmark */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-emerald-500 to-teal-700 text-slate-950 font-bold text-lg shadow-sm shadow-emerald-500/20">
-            N
-          </div>
-          <span className="text-xl font-bold tracking-tight text-white whitespace-nowrap">
-            Nivesha
-          </span>
-          <span className="text-xs text-slate-400 font-mono hidden sm:inline">
-            Living Money Model
+    <div className="sticky top-0 z-40 w-full flex flex-col">
+      {/* Top Guardrail Compliance Banner (from design doc) */}
+      <aside aria-label="Compliance disclaimer" className="bg-amber-950/90 border-b border-amber-600/30 text-amber-200 px-4 py-2 text-xs flex items-center justify-between shadow-sm">
+        <div className="max-w-7xl mx-auto flex items-center gap-2 text-center sm:text-left">
+          <ShieldAlert className="h-4 w-4 text-amber-400 shrink-0" />
+          <span>
+            <strong className="font-semibold text-amber-300">Educational & Scenario Modeling Tool Only:</strong>{' '}
+            Nivesha provides behavioral coaching, pattern analysis, and projection models; it does <em>not</em> provide financial advice or recommend specific securities or financial products.
           </span>
         </div>
+      </aside>
 
-        {/* Zone 2: 4-5 concise single-line nav links */}
-        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
-          <button
-            onClick={() => onSelectSection('overview')}
-            className={`whitespace-nowrap shrink-0 transition-colors hover:text-white ${
-              activeSection === 'overview' ? 'text-emerald-400 font-semibold' : ''
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => onSelectSection('simulator')}
-            className={`whitespace-nowrap shrink-0 transition-colors hover:text-white ${
-              activeSection === 'simulator' ? 'text-emerald-400 font-semibold' : ''
-            }`}
-          >
-            Scenario Simulator
-          </button>
-          <button
-            onClick={() => onSelectSection('ingestion')}
-            className={`whitespace-nowrap shrink-0 transition-colors hover:text-white ${
-              activeSection === 'ingestion' ? 'text-emerald-400 font-semibold' : ''
-            }`}
-          >
-            Ingestion Sandbox
-          </button>
-          <button
-            onClick={onOpenGraph}
-            className="flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors hover:text-emerald-300 text-slate-300"
-          >
-            <Network className="h-4 w-4 text-emerald-400" />
-            <span>Knowledge Graph</span>
-          </button>
-          <button
-            onClick={onOpenReview}
-            className="flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-colors hover:text-emerald-300 text-slate-300"
-          >
-            <FileText className="h-4 w-4 text-amber-400" />
-            <span>Monthly Review</span>
-          </button>
-        </nav>
+      {/* Main Header Navigation Bar */}
+      <header className="bg-slate-900/95 backdrop-blur-md border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16 gap-4">
+            {/* Logo Lockup */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-900/40 text-slate-950 font-black">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold tracking-tight text-white">NIVESHA</span>
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                    v2.4 Living Model
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 hidden sm:block">
+                  Your Money Your Way · Personal Finance Coach
+                </p>
+              </div>
+            </div>
 
-        {/* Zone 3: Primary action button + compliance status */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-mono">
-            <ShieldCheck className={`h-4 w-4 ${complianceActive ? 'text-emerald-400' : 'text-amber-400'}`} />
-            <span>Non-Advisory Guardrail Active</span>
+            {/* Nav Controls / Actions */}
+            <div className="flex items-center gap-2.5">
+              <button
+                onClick={() => onSelectTab('dashboard')}
+                className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'dashboard'
+                    ? 'text-emerald-400 bg-emerald-950/50 border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                <span>Dashboard</span>
+              </button>
+
+              <button
+                onClick={() => onSelectTab('simulator')}
+                className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
+                  activeTab === 'simulator'
+                    ? 'text-emerald-400 bg-emerald-950/50 border border-emerald-500/30'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                }`}
+              >
+                <Sliders className="h-4 w-4" />
+                <span>What-If Lab</span>
+              </button>
+
+              <button
+                onClick={onOpenGraph}
+                className="hidden md:flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+                title="View living knowledge graph"
+              >
+                <Network className="h-4 w-4 text-emerald-400" />
+                <span>Knowledge Graph</span>
+              </button>
+
+              <button
+                onClick={onOpenReview}
+                className="px-3.5 py-1.5 text-xs sm:text-sm font-semibold rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-colors shadow-md shadow-emerald-500/10 flex items-center gap-1.5 whitespace-nowrap shrink-0"
+              >
+                <FileText className="h-4 w-4" />
+                <span>Monthly Review</span>
+              </button>
+            </div>
           </div>
-          <button
-            onClick={onTriggerQuickStress}
-            className="inline-flex items-center gap-2 rounded-lg bg-emerald-500 px-3.5 py-2 text-xs font-semibold text-slate-950 transition hover:bg-emerald-400 active:scale-95 shadow-sm shadow-emerald-500/20 whitespace-nowrap shrink-0"
-          >
-            <PlayCircle className="h-4 w-4" />
-            <span>Run Stress Test</span>
-          </button>
         </div>
-      </div>
-    </header>
+      </header>
+    </div>
   );
 };
